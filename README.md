@@ -1,118 +1,104 @@
-MediTrack Pro 🏥
+# MediTrack Pro
 
-MediTrack Pro is a lightweight, web-based inventory and expiry management system designed to help users track medicine stocks, monitor expiration dates, and prevent waste. It features a real-time dashboard, visual status indicators, and persistent cloud storage using Firebase.
+A lightweight medicine inventory & expiry management web app. Track medicines, batch numbers, expiry dates and stock — with simple stats and Firebase-backed real-time sync.
 
-🚀 Features
+---
 
-Dashboard Overview: Real-time statistics for Total Stock, Expiring Soon, Expired Items, and Low Stock.
+## Demo / Preview
 
-Smart Status Tracking:
+Open the app locally in your browser:
 
-🔴 Expired: Visual alerts for items past their date.
+* `index.html` — file: `/mnt/data/index.html` 
 
-🟠 Warning: Custom thresholds (default 30 days) for "Expiring Soon" alerts.
+---
 
-🔵 Low Stock: Alerts when quantity drops below 10 units.
+## Features
 
-🟢 Good: Items that are safe and well-stocked.
+* Anonymous/demo login + optional custom token support. 
+* Real-time medicine list synced from Firestore (add / delete / live updates). 
+* Search + status filters (Expired / Expiring Soon / Low Stock / Good). 
+* Dashboard stats: Total, Expiring Soon, Expired, Low Stock. 
+* Clean responsive UI (HTML + CSS).  
 
-Inventory Management:
+---
 
-Add, remove, and view medicine details (Name, Batch #, Expiry Date, Quantity).
+## Tech stack
 
-Search by medicine name or batch number.
+* Plain HTML / CSS / JavaScript (ES modules).  
+* Firebase (Auth + Firestore) for real-time backend. 
 
-Filter inventory by status categories.
+---
 
-Customizable Settings: Users can set their own "Expiring Soon" day threshold.
+## Files of interest
 
-Responsive Design: Works seamlessly on desktop and mobile devices.
+* `/mnt/data/index.html` — main UI and boot script. 
+* `/mnt/data/style.css` — app styles and badge/status colors. 
+* `/mnt/data/app.js` — app logic, Firebase init, auth, Firestore listeners, UI rendering. 
 
-Cloud Persistence: Uses Google Firebase (Firestore) for data storage and Authentication for user sessions.
+---
 
-🛠️ Tech Stack
+## Quick start (local)
 
-Frontend: HTML5, CSS3 (CSS Variables, Flexbox/Grid), JavaScript (ES Modules).
+1. Clone the repo or copy files into a folder.
+2. Install nothing — files are static. Just open `/mnt/data/index.html` in a modern browser (module support required). 
+3. **Firebase** — before real sync, supply your Firebase config and (optionally) app id/token:
 
-Backend (BaaS): Firebase Authentication, Cloud Firestore.
+   * `app.js` expects a `__firebase_config` JSON and optional `__app_id` / `__initial_auth_token` variables to be injected at runtime. Edit or inject these where you serve the files (or replace the placeholders in the script). See `/mnt/data/app.js` for details. 
 
-Hosting: Static hosting (can be hosted on GitHub Pages, Netlify, Vercel, or Firebase Hosting).
+### Example: add config inline (development)
 
-📂 Project Structure
+In `index.html` before loading `app.js` you can inject a small script (dev only):
 
-/
-├── index.html    # Main application structure (Login & Dashboard)
-├── style.css     # Styling, themes, and responsive layout
-├── app.js        # Application logic, Firebase connectivity, and UI state management
-└── README.md     # Project documentation
-
-
-⚙️ Installation & Setup
-
-1. Clone the Repository
-
-git clone [https://github.com/yourusername/meditrack-pro.git](https://github.com/yourusername/meditrack-pro.git)
-cd meditrack-pro
-
-
-2. Configure Firebase
-
-Note: The current code uses environment variables (__firebase_config) intended for specific sandbox environments. To run this locally, you must update app.js.
-
-Go to the Firebase Console.
-
-Create a new project.
-
-Enable Authentication (turn on "Anonymous" sign-in provider).
-
-Enable Cloud Firestore (start in Test Mode for development).
-
-In Project Settings, create a web app and copy the firebaseConfig object.
-
-Open app.js and replace the configuration lines at the top:
-
-Replace this:
-
-const firebaseConfig = JSON.parse(__firebase_config);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-
-With this:
-
-const firebaseConfig = {
+```html
+<script>
+  window.__firebase_config = {
     apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+    authDomain: "YOUR_PROJECT.firebaseapp.com",
     projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
-};
-const appId = "meditrack-pro"; // You can keep this as a static string
+    // ...other firebase config
+  };
+  window.__app_id = "meditrack-pro-demo";
+  // optional: window.__initial_auth_token = "CUSTOM_AUTH_TOKEN";
+</script>
+<script type="module" src="app.js"></script>
+```
 
+> For production, keep secrets out of the client — use a secure server or proper Firebase rules.
 
-3. Run the Application
+---
 
-Since the app uses ES Modules, you likely need a local server to avoid CORS errors with local files.
+## Usage notes & behavior
 
-Using Python:
+* Login: clicking **Access Dashboard** triggers anonymous sign-in (demo). `app.js` also supports signing in with a custom token if `__initial_auth_token` is provided. 
+* Medicines are loaded from Firestore under the path structure used in `app.js`: `artifacts / <appId> / users / <uid> / medicines`. Adjust your database rules and collection naming accordingly. 
+* Status calculation: expiry days and stock thresholds are computed in `getStatus()` (expiry threshold coming from user settings; default threshold = 30 days). Check `app.js` to tweak logic. 
 
-python3 -m http.server
-# Open browser at http://localhost:8000
+---
 
+## UI / Styling
 
-Using VS Code Live Server:
-Right-click index.html and select "Open with Live Server".
+* Layout & components in `index.html`; styling in `style.css`. Colors and badge classes (`.badge.expired`, `.badge.warning`, etc.) are defined in the CSS file.  
 
-📖 Usage Guide
+---
 
-Login: Click "Access Dashboard" to sign in anonymously.
+## Extending the project (ideas)
 
-Add Medicine: (Ensure you have implemented the Modal UI logic connected to the addDoc function in your full code).
+* Add create / edit medicine modal and form persistence to Firestore. (Currently the UI scaffolds modals but they may be omitted/placeholder in the provided HTML.) 
+* Add barcode scanning to auto-populate medicine details. The UI has a `Scan Barcode` button ready for integration. 
+* Add notification delivery (email / push) when items reach threshold — user settings already include `notifications`. 
 
-Settings: Click the "⚙️ Settings" button to change how many days in advance you want to be warned about expiring medicines.
+---
 
-Delete: Click the trash icon 🗑️ to remove an item from the inventory.
+## Troubleshooting
 
-🛡️ License
+* **"Loading inventory..." stuck** — check browser console for Firebase auth errors and ensure `__firebase_config` is present.  
+* **Badges or colors not showing** — confirm `style.css` is loaded and variables in `:root` are intact. 
 
-This project is open-source and available under the MIT License.
+---
+
+## Contributing
+
+PRs welcome. Open an issue first if you plan to add features (e.g., editing medicines, CSV import/export, user management).
+
+---
+
